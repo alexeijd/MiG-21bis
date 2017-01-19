@@ -1,9 +1,7 @@
 <?xml version="1.0"?>
 
 <PropertyList>
-	<aax type="int">0</aax>
-	<aay type="int">0</aay>
-	<sim>
+	<sim include="Systems/views.xml">
 
 		<!-- Info -->
 
@@ -63,17 +61,6 @@
 
 		<!-- View Settings -->
 
-		<view n="0">
-			<internal archive="y">true</internal>
-			<config>
-				<pitch-offset-deg>-20.0</pitch-offset-deg>
-				<x-offset-m archive="y"> 0.00</x-offset-m>
-				<y-offset-m archive="y"> 1.28</y-offset-m>
-				<z-offset-m archive="y">-3.30</z-offset-m>
-				<default-field-of-view-deg type="double">75</default-field-of-view-deg>
-			</config>
-		</view>
-
 		<chase-distance-m>-20</chase-distance-m>
 
 		<!-- Menu -->
@@ -110,73 +97,7 @@
 
 		<!-- Help -->
 
-		<help>
-			<key>
-				<name>s</name>
-				<desc>Toggle starter valves</desc>
-			</key>
-			<key>
-				<name>Shift-q</name>
-				<desc>Fuel cut off</desc>
-			</key>
-			<key>
-				<name>Ctrl-b</name>
-				<desc>Toggle air brakes</desc>
-			</key>
-			<key>
-				<name>d</name>
-				<desc>Deploy drag parachute</desc>
-			</key>
-			<key>
-				<name>j</name>
-				<desc>Jettison drag parachute</desc>
-			</key>
-			<key>
-				<name>m</name>
-				<desc>Nose wheel steering</desc>
-			</key>
-			<key>
-				<name>c</name>
-				<desc>Toggle canopy</desc>
-			</key>
-			<key>
-				<name>e</name>
-				<desc>Eject</desc>
-			</key>
-			<key>
-				<name>f</name>
-				<desc>Gun trigger</desc>
-			</key>
-			<key>
-				<name>q</name>
-				<desc>Fire selected weapon</desc>
-			</key>
-			<key>
-				<name>1</name>
-				<desc>Select left R-60 missile</desc>
-			</key>
-			<key>
-				<name>2</name>
-				<desc>Select right R-60 missile</desc>
-			</key>
-			<key>
-				<name>Shift-1</name>
-				<desc>Select FAB-250 bombs</desc>
-			</key>
-			<key>
-				<name>Shift-3</name>
-				<desc>Select external fuel tank</desc>
-			</key>
-			<key>
-				<name>Ctrl-d</name>
-				<desc>Deselect all stations</desc>
-			</key>
-			<key>
-				<name>Ctrl-f</name>
-				<desc>Engage CSR Afterburner (below 15000ft)</desc>
-			</key>
-
-		</help>
+		<help include="Systems/help.xml" />
 
 		<!-- Multiplayer -->
 
@@ -265,9 +186,9 @@
 				<windage type="int">0</windage>
 				<!--fixed net fade value is set under gunsights below-->
 				<!--fixed net/pipper options-->
-				<red type="int">237</red>
-				<blue type="int">52</blue>
-				<green type="int">193</green>
+				<red type="int">239</red>
+				<green type="int">197</green>
+				<blue type="int">31</blue>
 				<thickness type="int">6</thickness>
 				<font-size type="int">60</font-size>
 				<!--gunsight switches and knobbins-->
@@ -505,7 +426,7 @@
 
     	<payload>
 			<weight n="0">
-				<name>Left wing outboard pylon</name>
+				<name>Left wing outboard pylon (#1)</name>
 				<selected>none</selected>
 				<weight-lb alias="/fdm/jsbsim/inertia/pointmass-weight-lbs[0]"/>
 				<opt>
@@ -535,7 +456,7 @@
 				</opt>
 			</weight>
 			<weight n="1">
-				<name>Left wing inboard pylon</name>
+				<name>Left wing inboard pylon (#3)</name>
 				<selected>none</selected>
 				<weight-lb alias="/fdm/jsbsim/inertia/pointmass-weight-lbs[1]"/>
 				<opt>
@@ -558,6 +479,11 @@
 					<lbs>550</lbs>
 					<weight-lb>550</weight-lb>
 				</opt>
+				<opt>
+					<name>FAB-500</name>
+					<lbs>1146</lbs>
+					<weight-lb>1146</weight-lb>
+				</opt>
 				<!--<opt>
 					<name>FAB-250</name>
 					<lbs>520</lbs>
@@ -575,7 +501,7 @@
 				</opt>-->
 			</weight>
 			<weight n="2">
-				<name>Fuselage pylon</name>
+				<name>Fuselage pylon (#5)</name>
 				<selected>none</selected>
 				<weight-lb alias="/fdm/jsbsim/inertia/pointmass-weight-lbs[2]"/>
 				<tank>1</tank>
@@ -599,9 +525,14 @@
 					<lbs>157</lbs>
 					<weight-lb>157</weight-lb>
 				</opt>
+				<opt>
+					<name>RN-28</name>
+					<lbs>1200</lbs>
+					<weight-lb>1200</weight-lb>
+				</opt>
 			</weight>
 			<weight n="3">
-				<name>Right wing inboard pylon</name>
+				<name>Right wing inboard pylon (#4)</name>
 				<selected>none</selected>
 				<weight-lb alias="/fdm/jsbsim/inertia/pointmass-weight-lbs[3]"/>
 				<opt>
@@ -624,6 +555,11 @@
 					<lbs>550</lbs>
 					<weight-lb>550</weight-lb>
 				</opt>
+				<opt>
+					<name>FAB-500</name>
+					<lbs>1146</lbs>
+					<weight-lb>1146</weight-lb>
+				</opt>
 				<!--<opt>
 						<name>FAB-250</name>
 						<lbs>520</lbs>
@@ -641,7 +577,7 @@
 				</opt>-->
 			</weight>
 			<weight n="4">
-				<name>Right wing outboard pylon</name>
+				<name>Right wing outboard pylon (#2)</name>
 				<selected>none</selected>
 				<weight-lb alias="/fdm/jsbsim/inertia/pointmass-weight-lbs[4]"/>
 				<opt>
@@ -675,7 +611,7 @@
                 <msg type="bool">true</msg>
                 <damage type="bool">true</damage>
 				<GSh-30>
-					<ammo type="int">200</ammo>
+					<ammo type="double">200</ammo>
 					<trigger type="bool">false</trigger>
 					<jammed type="bool">false</jammed>
 				</GSh-30>
@@ -690,12 +626,12 @@
                     <max-fire-range-nm type="double">4.32</max-fire-range-nm>
                     <FCS-field-deg type="int">35</FCS-field-deg>
                     <seeker-field-deg type="int">110</seeker-field-deg>
-                    <max-g type="int">25</max-g>
+                    <max-g type="int">30</max-g>
                     <max-launch-g type="int">7</max-launch-g>
-                    <thrust-lbf-stage-1 type="double">3821.75</thrust-lbf-stage-1>
+                    <thrust-lbf-stage-1 type="double">1281.41</thrust-lbf-stage-1>
                     <thrust-lbf-stage-2 type="double">0.0</thrust-lbf-stage-2>
-                    <stage-1-duration-sec type="double">1.95</stage-1-duration-sec>
-                    <stage-2-duration-sec type="double">1.0</stage-2-duration-sec>
+                    <stage-1-duration-sec type="double">4.0</stage-1-duration-sec>
+                    <stage-2-duration-sec type="double">0.0</stage-2-duration-sec>
                     <weight-launch-lbs type="double">96</weight-launch-lbs>
                     <weight-warhead-lbs type="double">6.6</weight-warhead-lbs>
                     <drag-coeff type="double">0.5</drag-coeff>
@@ -714,7 +650,7 @@
                     <class type="string">A</class>
                     <fire-msg>Aphid</fire-msg>
 					<flags>
-						<smoke-id-0 type="bool">false</smoke-id-0>
+					<smoke-id-0 type="bool">false</smoke-id-0>
 					</flags>
                 </r-60>
 				 <r-27r1>
@@ -723,7 +659,7 @@
                     <vol-search type="double">0.00</vol-search>
                     <vol-track type="double">0.00</vol-track>
                     <vol-track-weak type="double">0.00</vol-track-weak>
-                    <guidance type="string">radar</guidance>
+                    <guidance type="string">semi-radar</guidance>
                     <all-aspect type="bool">true</all-aspect>
                     <max-fire-range-nm type="double">39.41</max-fire-range-nm>
                     <FCS-field-deg type="int">35</FCS-field-deg>
@@ -752,7 +688,7 @@
                     <class type="string">A</class>
                     <fire-msg>Alamo</fire-msg>
 					<flags>
-						<smoke-id-0 type="bool">false</smoke-id-0>
+					<smoke-id-0 type="bool">false</smoke-id-0>
 					</flags>
                 </r-27r1>
 				 <r-27t1>
@@ -790,7 +726,7 @@
                     <class type="string">A</class>
                     <fire-msg>Alamo</fire-msg>
 					<flags>
-						<smoke-id-0 type="bool">false</smoke-id-0>
+					<smoke-id-0 type="bool">false</smoke-id-0>
 					</flags>
                 </r-27t1>
             </armament>
@@ -799,347 +735,7 @@
 
 	<!-- Keyboard Shortcuts -->
 	<input>
-		<keyboard>
-
-			<key n="4">
-				<name>Ctrl-d</name>
-				<desc>Deselect All Stations</desc>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/armament/station1/selected</property>
-					<value type="int">0</value>
-				</binding>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/armament/station2/selected</property>
-					<value type="int">0</value>
-				</binding>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/armament/station3/selected</property>
-					<value type="int">0</value>
-				</binding>
-			</key>
-
-			<key n="33">
-				<name>Shift 1</name>
-				<desc>Add Station 2</desc>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/armament/station2/selected</property>
-					<value type="int">1</value>
-				</binding>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/armament/station4/selected</property>
-					<value type="int">1</value>
-				</binding>
-			</key>
-
-			<key n="35">
-				<name>Shift 3</name>
-				<desc>Add Station 3</desc>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/armament/station3/selected</property>
-					<value type="int">1</value>
-				</binding>
-			</key>
-
-			<key n="49">
-				<name>1</name>
-				<desc>Add Station 1</desc>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/armament/station1/selected</property>
-					<value type="int">1</value>
-				</binding>
-			</key>
-
-			<key n="50">
-				<name>2</name>
-				<desc>Add Station 5</desc>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/armament/station5/selected</property>
-					<value type="int">1</value>
-				</binding>
-			</key>
-
-			<key n="81">
-				<name>Shift-Q</name>
-				<desc>Fuel cut off</desc>
-				<binding>
-					<condition>
-						<property>/sim/input/selected/engine[0]</property>
-					</condition>
-					<command>property-toggle</command>
-					<property>/controls/engines/engine[0]/cutoff</property>
-				</binding>
-			</key>
-
-			<key n="99">
-				<name>c</name>
-				<desc>toggle canopy</desc>
-				<binding>
-					<command>property-toggle</command>
-					<property>fdm/jsbsim/systems/canopy/command</property>
-				</binding>
-			</key>
-
-			<key n="100">
-				<name>d</name>
-				<desc>Deploy braking parachute</desc>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/chute/deploy</property>
-					<value type="int">1</value>
-				</binding>
-			</key>
-
-			<!-- needs to be rebound <key n="101">
-				<name>e</name>
-				<desc>Eject</desc>
-				<binding>
-					<command>nasal</command>
-					<script>Eject.eject();</script>
-				</binding>
-			</key> -->
-
-			<key n="102">
-				<name>f</name>
-				<desc>Gun trigger</desc>
-				<binding>
-					<command>property-assign</command>
-					<property>controls/armament/trigger</property>
-					<value>true</value>
-				</binding>
-				<mod-up>
-					<binding>
-						<command>property-assign</command>
-						<property>controls/armament/trigger</property>
-						<value>false</value>
-					</binding>
-				</mod-up>
-			</key>
-
-			<key n="106">
-				<name>j</name>
-				<desc>jettison braking parachute</desc>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/chute/deploy</property>
-					<value type="int">0</value>
-				</binding>
-				<binding>
-					<command>property-assign</command>
-					<property>controls/flight/chute_jettisoned</property>
-					<value type="int">1</value>
-				</binding>
-			</key>
-
-			<key n="109">
-				<name>m</name>
-				<desc>engage nose wheel steering</desc>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/NWS/engaged</property>
-					<value>1</value>
-				</binding>
-				<mod-up>
-					<binding>
-						<command>property-assign</command>
-						<property>fdm/jsbsim/systems/NWS/engaged</property>
-						<value>0</value>
-					</binding>
-				</mod-up>
-			</key>
-
-			<key n="113">
-				<name>q</name>
-				<desc>Release selected store</desc>
-				<binding>
-					<command>property-assign</command>
-					<property>fdm/jsbsim/systems/armament/release</property>
-					<value>1</value>
-				</binding>
-				<mod-up>
-					<binding>
-						<command>property-assign</command>
-						<property>fdm/jsbsim/systems/armament/release</property>
-						<value>0</value>
-					</binding>
-				</mod-up>
-			</key>
-
-			<key n="115">
-				<name>s</name>
-				<desc>Toggle starter valves</desc>
-				<binding>
-					<command>property-toggle</command>
-					<property>controls/engines/engine[0]/starter</property>
-				</binding>
-				<mod-up>
-					<binding>
-						<command>null</command>
-					</binding>
-				</mod-up>
-			</key>
-
-			<key n="6">
-				<name>Ctrl-f</name>
-				<desc>Toggle CSR Mode (modelled as 3 minutes water injection)</desc>
-				<binding>
-					<command>property-toggle</command>
-					<property>fdm/jsbsim/propulsion/clr</property>
-				</binding>
-			</key>
-			
-			<key n="110">
-				<name>n</name>
-				<desc>Lock on target</desc>
-				<binding>
-					<command>nasal</command>
-					<script>radar_logic.lockTarget();</script>
-				</binding>
-			</key>
-			
-			<key n="78">
-				<name>N</name>
-				<desc>Unlock Target</desc>
-				<binding>
-					<command>nasal</command>
-					<script>radar_logic.unlockTarget();</script>
-				</binding>
-			</key>
-
-			<key n="105">
-				<name>i</name>
-				<desc>Move locking box up</desc>
-				<repeatable>true</repeatable>
-				<binding>
-					<command>property-adjust</command>
-					<property>controls/radar/lock-bars-pos</property>
-					<step>10</step>
-					<min>0</min>
-					<max>900</max>
-					<wrap>false</wrap>
-				</binding>
-				<binding>
-					<command>property-adjust</command>
-					<property>controls/armament/gunsight/pipper-scale</property>
-					<step>4</step>
-					<min>5</min>
-					<max>220</max>
-					<wrap>false</wrap>
-				</binding>
-			</key>
-			
-			<key n="73">
-				<name>I</name>
-				<desc>Move locking box up - fine</desc>
-				<repeatable>true</repeatable>
-				<binding>
-					<command>property-adjust</command>
-					<property>controls/radar/lock-bars-pos</property>
-					<step>2</step>
-					<min>0</min>
-					<max>900</max>
-					<wrap>false</wrap>
-				</binding>
-				<binding>
-					<command>property-adjust</command>
-					<property>controls/armament/gunsight/pipper-scale</property>
-					<step>1</step>
-					<min>5</min>
-					<max>220</max>
-					<wrap>false</wrap>
-				</binding>
-			</key>
-			
-			<key n="107">
-				<name>k</name>
-				<desc>Move locking box down</desc>
-				<repeatable>true</repeatable>
-				<binding>
-					<command>property-adjust</command>
-					<property>controls/radar/lock-bars-pos</property>
-					<step>-10</step>
-					<min>0</min>
-					<max>900</max>
-					<wrap>false</wrap>
-				</binding>
-				<binding>
-					<command>property-adjust</command>
-					<property>controls/armament/gunsight/pipper-scale</property>
-					<step>-4</step>
-					<min>5</min>
-					<max>220</max>
-					<wrap>false</wrap>
-				</binding>
-			</key>
-			
-			<key n="75">
-				<name>K</name>
-				<desc>Move locking box down - fine</desc>
-				<repeatable>true</repeatable>
-				<binding>
-					<command>property-adjust</command>
-					<property>controls/radar/lock-bars-pos</property>
-					<step>-2</step>
-					<min>0</min>
-					<max>900</max>
-					<wrap>false</wrap>
-				</binding>
-				<binding>
-					<command>property-adjust</command>
-					<property>controls/armament/gunsight/pipper-scale</property>
-					<step>-1</step>
-					<min>5</min>
-					<max>220</max>
-					<wrap>false</wrap>
-				</binding>
-			</key>
-			
-			<key n="106">
-				<name>j</name>
-				<desc>Compress locking box</desc>
-				<repeatable>true</repeatable>
-				<binding>
-					<command>property-adjust</command>
-					<property>controls/radar/lock-bars-scale</property>
-					<step>-5</step>
-					<min>50</min>
-					<max>250</max>
-					<wrap>false</wrap>
-				</binding>
-			</key>
-			
-			<key n="108">
-				<name>l</name>
-				<desc>Widen locking box</desc>
-				<repeatable>true</repeatable>
-				<binding>
-					<command>property-adjust</command>
-					<property>controls/radar/lock-bars-scale</property>
-					<step>5</step>
-					<min>50</min>
-					<max>250</max>
-					<wrap>false</wrap>
-				</binding>
-			</key>
-			
-			<key n="83">
-				<name>S</name>
-				<desc>Activate Smokepod</desc>
-				<repeatable>true</repeatable>
-				<binding>
-					<command>property-toggle</command>
-					<property>/controls/smokepod/trigger</property>
-				</binding>
-			</key>
-
-		</keyboard>
+		<keyboard include="Systems/keyboard.xml" />
 	</input>
 
 	<!-- Effects -->
