@@ -16,12 +16,14 @@ var MISSILE_SEARCH = 0;
 var MISSILE_LOCK = 1;
 var MISSILE_FLYING = 2;
 var ir_sar_switch = "/controls/armament/panel/ir-sar-switch";
+var ag_panel_switch = "/controls/armament/panel/air-gnd-switch";
 
 ############### Main loop ###############
 
 input = {
   replay:           "sim/replay/replay-state",
   elapsed:          "sim/time/elapsed-sec",
+  impact:			"/ai/models/model-impact",
 };
 
 var pos_arm = {
@@ -38,15 +40,22 @@ var pos_arm = {
 var payloads = {
 	#payload format is:
 	#name: pos_arm.new(brevity code, weight, type/guidance, ammo count (optional)
-	#type/guidance options: none (dnu),radar, ir, beam, bomb, rocket, tank, antirad
+	#bomb names can NOT have spaces in them.
+	#type/guidance options: none (dnu),radar, ir, beam, bomb, rocket, tank, antirad, heavy
 	"none":					pos_arm.new("none",0,"none"),
 	# ir missiles
 	"R-60":					pos_arm.new("R-60",96,"ir"),
-	"R-27T1":					pos_arm.new("R-27T1",550,"ir"),
+	"R-27T1":				pos_arm.new("R-27T1",550,"ir"),
 	# radar missiles
-	"R-27R1":					pos_arm.new("R-27R1",560,"radar"),
+	"R-27R1":				pos_arm.new("R-27R1",560,"radar"),
 	# bombs
 	"FAB-250":				pos_arm.new("FAB-250",520,"bomb"),
+	"FAB-500":				pos_arm.new("FAB-500",1146,"bomb"),
+	# heavy
+	"RN-14T":				pos_arm.new("RN-14T",856,"heavy"),
+	"RN-18T":				pos_arm.new("RN-18T",1150,"heavy"),
+	"RN-24":				pos_arm.new("RN-24",860,"heavy"),
+	"RN-28":				pos_arm.new("RN-28",1200,"heavy"),
 	# anti-radiation
 	"Kh-25":				pos_arm.new("Kh-25",695,"antirad"),
 	# beam
@@ -56,10 +65,12 @@ var payloads = {
 	"UB-32":				pos_arm.new("UB-32",582,"rocket",32),
 	"S-21":					pos_arm.new("S-21",341,"rocket"), #no real info found (yet)
 	"S-24":					pos_arm.new("S-24",518,"rocket"),
-	"PTB-490 Droptank":			pos_arm.new("PTB-490 Droptank",180,"tank"),
-	"PTB-800 Droptank":			pos_arm.new("PTB-800 Droptank",230,"tank"),
-	"Smokepod":		pos_arm.new("smokepod",157,"tank")
+	"PTB-490 Droptank":		pos_arm.new("PTB-490 Droptank",180,"tank"),
+	"PTB-800 Droptank":		pos_arm.new("PTB-800 Droptank",230,"tank"),
+	"Smokepod":				pos_arm.new("smokepod",157,"tank")
 };
+
+var loop_time = 0;
 
 var update_loop = func {
 
@@ -83,11 +94,15 @@ var update_loop = func {
 					setprop("payload/weight["~ (i) ~"]/selected", "none");
 				}
 			}
+			if ( payloads[selected].type == "bomb" ) {
+				setprop("payload/released/"~selected~"["~i~"]",0);
+			}
 		} elsif (selected == "none") {
 			if ( armament.AIM.active[i] != nil ) {
 				#print("deleting "~i~" due to pylon being none.");
 				armament.AIM.active[i].del();
 			}
+			setprop("payload/released/"~selected~"["~i~"]",0);
 		}
 	}
 	# need seperate logic for pylons 5/6/7/8, which is what the r-60 doubles will be using.
@@ -98,17 +113,19 @@ var update_loop = func {
 	for ( i = 0; i <= 4; i += 1 ) {
 		#print("in arming logic");
 		var payloadName = getprop("/payload/weight[" ~ i ~ "]/selected");
-		if ( armament.AIM.active[i] != nil ) {
-			if ( armSelect[0] != i and armSelect[1] != i and armament.AIM.active[i].status != MISSILE_FLYING ) {
-				#print("setting pylon " ~ i ~ " to standby");
-				armament.AIM.active[i].status = MISSILE_STANDBY;
-			} elsif ( armament.AIM.active[i].status != MISSILE_STANDBY and armament.AIM.active[i] != MISSILE_FLYING and payloadName == "none" ) {
-				#print("setting pylon " ~ i ~ " to standby");
-				armament.AIM.active[i].status = MISSILE_STANDBY;
-			} elsif ( (armSelect[0] == i or armSelect[1] == i) and armament.AIM.active[i].status == MISSILE_STANDBY ) {
-				#print("missile " ~i~ " should be searching.");
-				armament.AIM.active[i].status = MISSILE_SEARCH;
-				armament.AIM.active[i].search();
+		if (payloads[payloadName].type == "ir" or payloads[payloadName].type == "radar" or payloads[payloadName].type == "antirad") {
+			if ( armament.AIM.active[i] != nil ) {
+				if ( armSelect[0] != i and armSelect[1] != i and armament.AIM.active[i].status != MISSILE_FLYING ) {
+					#print("setting pylon " ~ i ~ " to standby");
+					armament.AIM.active[i].status = MISSILE_STANDBY;
+				} elsif ( armament.AIM.active[i].status != MISSILE_STANDBY and armament.AIM.active[i] != MISSILE_FLYING and payloadName == "none" ) {
+					#print("setting pylon " ~ i ~ " to standby");
+					armament.AIM.active[i].status = MISSILE_STANDBY;
+				} elsif ( (armSelect[0] == i or armSelect[1] == i) and armament.AIM.active[i].status == MISSILE_STANDBY ) {
+					#print("missile " ~i~ " should be searching.");
+					armament.AIM.active[i].status = MISSILE_SEARCH;
+					armament.AIM.active[i].search();
+				}
 			}
 		}
 	}
@@ -172,7 +189,11 @@ var update_loop = func {
 				setprop("payload/armament/GSh-30/trigger",0);
 				print("GSh-30 has jammed!");
 			}
-			cur_ammo = math.clamp(cur_ammo - 4,0,200);
+			var scnd = getprop("/sim/time/elapsed-sec")  - loop_time;
+			var spent= int(58.3 * scnd);
+			#print("scnd: " ~ scnd);
+			#print("spent: " ~ spent);
+			cur_ammo = math.clamp(cur_ammo - spent,0,200);
 			setprop("payload/armament/GSh-30/trigger",1);
 			setprop("payload/armament/GSh-30/ammo",cur_ammo);
 		} else {
@@ -182,6 +203,8 @@ var update_loop = func {
 	} else {
 		setprop("payload/armament/GSh-30/trigger",0);
 	}
+	
+	loop_time = getprop("/sim/time/elapsed-sec");
 	
 	settimer(update_loop, UPDATE_PERIOD);
 }
@@ -221,18 +244,42 @@ var missile_release_listener = func {
 	if (getprop("/fdm/jsbsim/systems/armament/release") == 1 )  {
 		#print("selected0.type: " ~ selected0.type);
 		#print("iar_sar_switch: " ~ getprop(ir_sar_switch));
-		if ( ((selected0.type = "ir" and getprop(ir_sar_switch) == 0 ) or ( selected0.type = "radar" and getprop(ir_sar_switch) == 2 )) and armSelect[2] >= 5 ) {
-			round2 = 0;
-			missile_release(armSelect[0]);
-		}
-		if ( armSelect[1] != -1 and getprop("payload/weight["~(armSelect[1])~"]/selected") != "none") {
-			if ( ((selected1.type = "ir" and getprop(ir_sar_switch) == 0 ) or ( selected1.type = "radar" and getprop(ir_sar_switch) == 2 )) and armSelect[2] >= 5 ) { #if is IR/Radar missile, and weapon selector is in missile range
-			settimer(func { 
-				missile_release(armSelect[1]); 
-				}, 0.75);
+		
+		
+		if (armSelect[2] >= 5 ) {
+			# missile launch logic
+			if ((selected0.type = "ir" and getprop(ir_sar_switch) == 0 ) or ( selected0.type = "radar" and getprop(ir_sar_switch) == 2 )) {
+				missile_release(armSelect[0]);
+			}
+			if ( armSelect[1] != -1 and getprop("payload/weight["~(armSelect[1])~"]/selected") != "none") {
+				if ((selected1.type = "ir" and getprop(ir_sar_switch) == 0 ) or ( selected1.type = "radar" and getprop(ir_sar_switch) == 2 )) { #if is IR/Radar missile, and weapon selector is in missile range
+				settimer(func { 
+					missile_release(armSelect[1]); 
+					}, 0.75);
+				}
+			}
+			
+
+		} elsif (armSelect[2] <= 2) {
+			#bombs and/or multi-rockets
+			if (selected0.type == "bomb" and getprop(ag_panel_switch) == 2 ) {
+				bomb_release(armSelect[0]);
+			}
+			if ( armSelect[1] != -1 and getprop("payload/weight["~(armSelect[1])~"]/selected") != "none") {
+				if (selected1.type == "bomb" and getprop(ag_panel_switch) == 2 ) {
+					settimer(func { 
+						bomb_release(armSelect[1]); 
+					}, 0.75);
+				}
 			}
 		}
-		
+	}
+}
+
+var heavy_release_listener = func {
+	var selected = getprop("payload/weight[2]/selected");
+	if ( payloads[selected].type = "heavy" ) {
+		bomb_release(2);
 	}
 }
   
@@ -268,23 +315,6 @@ var missile_release_listener = func {
 var missile_release = func(pylon) {
 	if(getprop("payload/weight["~(pylon)~"]/selected") != "none") { 
 		# trigger is pulled, a pylon is selected, the pylon has a missile that is locked on. The gear check is prevent missiles from firing when changing airport location.
-		#if ( armament.AIM.active[pylon] != nil ) {
-		#	var am = 1;
-		#}else{
-		#	var am = 0;
-		#}
-		#print("arma: " ~ am);
-		#print("status: " ~ armament.AIM.active[pylon].status);
-		#if ( radar_logic.selection != nil ) {
-		#	var rs = 1;
-		#}else{
-		#	var rs = 0;
-		#}
-		#print("selection: " ~ rs);
-		#print("pylon: " ~pylon);
-		#print("status: " ~ armament.AIM.active[pylon].status);
-		#print("target: " ~armament.AIM.active[pylon].callsign);
-		#print("selection: " ~radar_logic.selection.get_Callsign());
 		if (armament.AIM.active[pylon] != nil and armament.AIM.active[pylon].status == 1 and radar_logic.selection != nil) {
 			#missile locked, fire it.
 
@@ -304,39 +334,128 @@ var missile_release = func(pylon) {
 		}
 	}
 }
-############ Cannon impact messages #####################
 
-var last_impact = 0;
+var bomb_release = func(pylon) {
+	var selected = getprop("payload/weight[" ~ ( pylon ) ~ "]/selected");
+	if ( selected != "none" ) {
+		print("dropping bomb: " ~ payloads[selected].brevity ~ ": pylon " ~ pylon);
+		setprop("payload/weight[" ~ ( pylon ) ~ "]/selected", "none" );
+		setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~pylon~"]",0);
+		setprop("payload/released/"~selected~"["~pylon~"]",1);
+		var phrase = payloads[selected].brevity ~ " released.";
+		if (getprop("payload/armament/msg")) {
+			defeatSpamFilter(phrase);
+		} else {
+			setprop("/sim/messages/atc", phrase);
+		}
+	}
+}
+		
+############ Impact messages #####################
 
 var hit_count = 0;
+var hit_callsign = "";
+var hit_timer = 0;
+var closest_distance = 200;
 
 var impact_listener = func {
-  if (radar_logic.selection != nil and (input.elapsed.getValue()-last_impact) > 1) {
+	#print(payloads["FAB-500"].type);
     var ballistic_name = input.impact.getValue();
     var ballistic = props.globals.getNode(ballistic_name, 0);
+	var closest_distance = 10000;
+	var inside_callsign = "";
+	#print("inside listener");
     if (ballistic != nil) {
-      var typeNode = ballistic.getNode("impact/type");
-      if (typeNode != nil and typeNode.getValue() != "terrain") {
-        var lat = ballistic.getNode("impact/latitude-deg").getValue();
-        var lon = ballistic.getNode("impact/longitude-deg").getValue();
-        var impactPos = geo.Coord.new().set_latlon(lat, lon);
+		#print("ballistic isn't nil");
+		var typeNode = ballistic.getNode("impact/type");
+		var typeOrd = ballistic.getNode("name").getValue();
+		#print("typeOrd: " ~ typeOrd);
+		if (typeNode != nil) {
+			#print("typenode isnt nil");
+			var lat = ballistic.getNode("impact/latitude-deg").getValue();
+			var lon = ballistic.getNode("impact/longitude-deg").getValue();
+			var impactPos = geo.Coord.new().set_latlon(lat, lon);
+			if (typeOrd == "GSh-23" and typeNode.getValue() != "terrain") {
+				closest_distance = 35;
+				foreach(var mp; props.globals.getNode("/ai/models").getChildren("multiplayer")){
+					#print("Gau impact - hit: " ~ typeNode.getValue());
+					var mlat = mp.getNode("position/latitude-deg").getValue();
+					var mlon = mp.getNode("position/longitude-deg").getValue();
+					var malt = mp.getNode("position/altitude-ft").getValue() * FT2M;
+					var selectionPos = geo.Coord.new().set_latlon(mlat, mlon, malt);
+					var distance = impactPos.distance_to(selectionPos);
+					#print("distance = " ~ distance);
+					if (distance < closest_distance) {
+						closest_distance = distance;
+						inside_callsign = mp.getNode("callsign").getValue();
+					}
+				}
 
-        var selectionPos = radar_logic.selection.get_Coord();
+				if ( inside_callsign != "" ) {
+					#we have a successful hit
+					#print("successful hit");
+					if ( inside_callsign == hit_callsign ) {
+						hit_count = hit_count + 1;
+						#print("hit_count: " ~ hit_count);
+					} else {
+						#print("new callsign");
+						hit_callsign = inside_callsign;
+						hit_count = 1;
+					}
+					if ( hit_timer == 0 ) {
+						hit_timer = 1;
+						#print("should be going into the timer...");
+						settimer(func{hitmessage(typeOrd);},1);
+					}
+				}
+			}elsif (payloads[typeOrd] != nil and payloads[typeOrd].type == "bomb")  {
+				#print("bomb impact!");
+				closest_distance = 250;
+				foreach(var mp; props.globals.getNode("/ai/models").getChildren("multiplayer")){
+					var mlat = mp.getNode("position/latitude-deg").getValue();
+					var mlon = mp.getNode("position/longitude-deg").getValue();
+					var malt = mp.getNode("position/altitude-ft").getValue() * FT2M;
+					var selectionPos = geo.Coord.new().set_latlon(mlat, mlon, malt);
+					var distance = impactPos.distance_to(selectionPos);
+					#print("distance = " ~ distance);
+					if (distance < closest_distance) {
+						closest_distance = distance;
+						inside_callsign = mp.getNode("callsign").getValue();
+					}
+				}
+				if (inside_callsign != "" ) {
+					defeatSpamFilter(sprintf( typeOrd~" exploded: %01.1f", distance) ~ " meters from: " ~ inside_callsign);
+				}
+			}elsif (payloads[typeOrd] != nil and payloads[typeOrd].type == "heavy")  {
+				#print("bomb impact!");
+				closest_distance = 1000;
+				foreach(var mp; props.globals.getNode("/ai/models").getChildren("multiplayer")){
+					var mlat = mp.getNode("position/latitude-deg").getValue();
+					var mlon = mp.getNode("position/longitude-deg").getValue();
+					var malt = mp.getNode("position/altitude-ft").getValue() * FT2M;
+					var selectionPos = geo.Coord.new().set_latlon(mlat, mlon, malt);
+					var distance = impactPos.distance_to(selectionPos);
+					#print("distance = " ~ distance);
+					if (distance < closest_distance) {
+						closest_distance = distance;
+						inside_callsign = mp.getNode("callsign").getValue();
+					}
+				}
+				if (inside_callsign != "" ) {
+					defeatSpamFilter(sprintf( typeOrd~" exploded: %01.1f", distance) ~ " meters from: " ~ inside_callsign);
+				}
+			}
+		}
+	}
+}
 
-        var distance = impactPos.distance_to(selectionPos);
-        if (distance < 125) {
-          last_impact = input.elapsed.getValue();
-          var phrase =  ballistic.getNode("name").getValue() ~ " hit: " ~ radar_logic.selection.get_Callsign();
-          if (getprop("payload/armament/msg")) {
-            defeatSpamFilter(phrase);
-			      #hit_count = hit_count + 1;
-          } else {
-            setprop("/sim/messages/atc", phrase);
-          }
-        }
-      }
-    }
-  }
+var hitmessage = func(typeOrd) {
+	#print("inside hitmessage");
+	message = typeOrd ~ " hit: " ~ hit_callsign ~ ": " ~ hit_count ~ " hits";
+	defeatSpamFilter(message);
+	hit_callsign = "";
+	hit_timer = 0;
+	hit_count = 0;
 }
 
 ############ Smokepod Cannon Trigger Controller##############
@@ -465,6 +584,7 @@ var main_init = func {
 
   screen.log.write("Welcome to MiG-21bis!", 1.0, 0.2, 0.2);
   setlistener("/fdm/jsbsim/systems/armament/release", missile_release_listener);
+  setlistener("fdm/jsbsim/systems/armament/heavy-release", heavy_release_listener);
 
   # setup impact listener
   setlistener("/ai/models/model-impact", impact_listener, 0, 0);
