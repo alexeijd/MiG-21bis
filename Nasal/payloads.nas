@@ -419,12 +419,8 @@ var impact_listener = func {
 					var distance = impactPos.distance_to(selectionPos);
 					#print("distance = " ~ distance);
 					if (distance < closest_distance) {
-						closest_distance = distance;
-						inside_callsign = mp.getNode("callsign").getValue();
+						defeatSpamFilter(sprintf( typeOrd~" exploded: %01.1f", distance) ~ " meters from: " ~ mp.getNode("callsign").getValue());
 					}
-				}
-				if (inside_callsign != "" ) {
-					defeatSpamFilter(sprintf( typeOrd~" exploded: %01.1f", distance) ~ " meters from: " ~ inside_callsign);
 				}
 			}elsif (payloads[typeOrd] != nil and payloads[typeOrd].type == "heavy")  {
 				#print("bomb impact!");
@@ -437,12 +433,8 @@ var impact_listener = func {
 					var distance = impactPos.distance_to(selectionPos);
 					#print("distance = " ~ distance);
 					if (distance < closest_distance) {
-						closest_distance = distance;
-						inside_callsign = mp.getNode("callsign").getValue();
+						defeatSpamFilter(sprintf( typeOrd~" exploded: %01.1f", distance) ~ " meters from: " ~ mp.getNode("callsign").getValue());
 					}
-				}
-				if (inside_callsign != "" ) {
-					defeatSpamFilter(sprintf( typeOrd~" exploded: %01.1f", distance) ~ " meters from: " ~ inside_callsign);
 				}
 			}
 		}
@@ -624,12 +616,17 @@ var defeatSpamFilter = func (str) {
   for (var i = 1; i <= spams; i+=1) {
     str = str~".";
   }
+  var myCallsign = getprop("sim/multiplay/callsign");
+  if (myCallsign != nil and find(myCallsign, str) != -1) {
+      str = myCallsign~": "~str;
+  }
   var newList = [str];
   for (var i = 0; i < size(spamList); i += 1) {
     append(newList, spamList[i]);
   }
   spamList = newList;  
 }
+
 
 var spamLoop = func {
   var spam = pop(spamList);
