@@ -86,7 +86,10 @@ var update_loop = func {
 		var selected = getprop("payload/weight["~ (i) ~"]/selected");
 		if(selected != "none" and getprop("payload/weight["~ (i) ~"]/weight-lb") == 0) {
 			setprop("controls/armament/station["~(i)~"]/released", FALSE);
-			if (payloads[selected].type == "ir" or payloads[selected].type == "radar" or payloads[selected].type == "antirad") {
+			if (payloads[selected].type == "ir" or 
+					payloads[selected].type == "radar" or 
+					payloads[selected].type == "antirad" or
+					payloads[selected].type == "beam") {
 				if(armament.AIM.active[i] != nil and armament.AIM.active[i].type != selected) {
 					#print("deleting "~i~" due to type != selected");
 					armament.AIM.active[i].del();
@@ -113,21 +116,19 @@ var update_loop = func {
 	############ MISSILE ARMING LOGIC ################
 	var armSelect = pylon_select();
 	for ( i = 0; i <= 4; i += 1 ) {
-		#print("in arming logic");
-		var payloadName = getprop("/payload/weight[" ~ i ~ "]/selected");
-		if (payloads[payloadName].type == "ir" or payloads[payloadName].type == "radar" or payloads[payloadName].type == "antirad") {
-			if ( armament.AIM.active[i] != nil ) {
-				if ( armSelect[0] != i and armSelect[1] != i and armament.AIM.active[i].status != MISSILE_FLYING ) {
-					#print("setting pylon " ~ i ~ " to standby");
-					armament.AIM.active[i].status = MISSILE_STANDBY;
-				} elsif ( armament.AIM.active[i].status != MISSILE_STANDBY and armament.AIM.active[i] != MISSILE_FLYING and payloadName == "none" ) {
-					#print("setting pylon " ~ i ~ " to standby");
-					armament.AIM.active[i].status = MISSILE_STANDBY;
-				} elsif ( (armSelect[0] == i or armSelect[1] == i) and armament.AIM.active[i].status == MISSILE_STANDBY ) {
-					#print("missile " ~i~ " should be searching.");
-					armament.AIM.active[i].status = MISSILE_SEARCH;
-					armament.AIM.active[i].search();
-				}
+	#print("in arming logic");
+	var payloadName = getprop("/payload/weight[" ~ i ~ "]/selected");
+		if ( armament.AIM.active[i] != nil ) {
+			if ( armSelect[0] != i and armSelect[1] != i and armament.AIM.active[i].status != MISSILE_FLYING ) {
+				#print("setting pylon " ~ i ~ " to standby");
+				armament.AIM.active[i].status = MISSILE_STANDBY;
+			} elsif ( armament.AIM.active[i].status != MISSILE_STANDBY and armament.AIM.active[i] != MISSILE_FLYING and payloadName == "none" ) {
+				#print("setting pylon " ~ i ~ " to standby");
+				armament.AIM.active[i].status = MISSILE_STANDBY;
+			} elsif ( (armSelect[0] == i or armSelect[1] == i) and armament.AIM.active[i].status == MISSILE_STANDBY ) {
+				#print("missile " ~i~ " should be searching.");
+				armament.AIM.active[i].status = MISSILE_SEARCH;
+				armament.AIM.active[i].search();
 			}
 		}
 	}
@@ -366,7 +367,7 @@ var impact_listener = func {
 	var closest_distance = 10000;
 	var inside_callsign = "";
 	#print("inside listener");
-    if (ballistic != nil and ballistic.getNode("name").getValue() != nil and ballistic.getNode("impact/type") != nil) {
+    if (ballistic != nil and ballistic.getNode("name") != nil and ballistic.getNode("impact/type") != nil) {
 		var typeNode = ballistic.getNode("impact/type");
 		var typeOrd = ballistic.getNode("name").getValue();
 		var lat = ballistic.getNode("impact/latitude-deg").getValue();
@@ -409,7 +410,6 @@ var impact_listener = func {
 				var malt = mp.getNode("position/altitude-ft").getValue() * FT2M;
 				var selectionPos = geo.Coord.new().set_latlon(mlat, mlon, malt);
 				var distance = impactPos.distance_to(selectionPos);
-				#print("distance = " ~ distance);
 				if (distance < payloads[typeOrd].hit_max_distance) {
 					defeatSpamFilter(sprintf( typeOrd~" exploded: %01.1f", distance) ~ " meters from: " ~ mp.getNode("callsign").getValue());
 				}
