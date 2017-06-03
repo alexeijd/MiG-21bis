@@ -17,7 +17,7 @@
 		</rating>
 
 		<flight-model>jsb</flight-model>
-		<aero>MiG-21bis</aero>
+		<aero>MiG-21MF-75</aero>
 
 		<startup>
 			<splash-texture>Aircraft/MiG-21bis/Splash.png</splash-texture>
@@ -26,7 +26,7 @@
 		<!-- Models -->
 
 		<model>
-			<path>Aircraft/MiG-21bis/Models/MiG-21bis.xml</path>
+			<path>Aircraft/MiG-21bis/Models/MiG-21MF-75.xml</path>
 		</model>
 
 		<submodels>
